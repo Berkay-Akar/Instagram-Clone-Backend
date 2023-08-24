@@ -129,6 +129,11 @@ export const schema = gql`
     updated_at: String!
   }
 
+  type StoriesResponse {
+    user: User!
+    stories: [Story!]!
+  }
+
   type Query {
     users: [User!]!
     user(id: Int!): User
@@ -137,7 +142,7 @@ export const schema = gql`
     authentication: User
     profile(userId: Int!): [User]
     replies(postId: Int!): Post_replies
-    stories: [Story!]
+    getStoryList: [StoriesResponse]
   }
 
   type Mutation {

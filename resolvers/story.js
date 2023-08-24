@@ -3,28 +3,43 @@ import { uploadImage } from "../utils/cloudinary.js";
 
 export const storyResolver = {
   Query: {
-    stories: async (_, __, { prisma, user }) => {
+    getStoryList: async (_, __, { prisma, user }) => {
       const loggedInUser = await prisma.user.findFirst({
         where: {
           id: user.id,
         },
         include: {
-          followings: true,
+          followings: {
+            select: {
+              following_id: true,
+            },
+          },
         },
       });
-      const userStories = await prisma.story.findMany({
+
+      const userIds = [
+        user.id,
+        ...loggedInUser.followings.map((f) => f.following_id),
+      ];
+
+      const allStories = await prisma.story.findMany({
         where: {
-          user_id: user.id,
+          user_id: {
+            in: userIds,
+          },
         },
-        orderBy: {
-          created_at: "desc",
-        },
+        orderBy: [
+          {
+            created_at: "desc",
+          },
+        ],
         select: {
           id: true,
           file: true,
           created_at: true,
           like_count: true,
           is_saved: true,
+          user_id: true,
           user: {
             select: {
               id: true,
@@ -48,112 +63,37 @@ export const storyResolver = {
           },
         },
       });
-      console.log("user stories: ", userStories);
 
-      let followingStories = [];
-      if (loggedInUser.followings && loggedInUser.followings.length > 0) {
-        const followingIds = loggedInUser.followings.map(
-          (follow) => follow.following_id
-        );
-        followingStories = await prisma.story.findMany({
-          where: {
-            user_id: {
-              in: followingIds,
-            },
-          },
-          orderBy: {
-            created_at: "desc",
-          },
-          select: {
-            id: true,
-            file: true,
-            created_at: true,
-            like_count: true,
-            is_saved: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-                username: true,
-                profile_photo: true,
-              },
-            },
-            likes: {
-              select: {
-                id: true,
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    username: true,
-                    profile_photo: true,
-                  },
-                },
-              },
-            },
-          },
-        });
-      }
-      console.log("following stories: ", followingStories);
-
-      const allStories = [
-        ...userStories.map((story) => ({
-          id: story.id,
-          user_id: user.id,
-          name: user.name,
-          username: user.username,
-          story,
-        })),
-        ...followingStories.map((story) => ({
-          id: story.id,
-          user_id: story.user.id,
-          name: story.user.id === user.id ? user.name : story.user.name,
-          username:
-            story.user.id === user.id ? user.username : story.user.username,
-          story,
-        })),
-      ];
+      const userStoriesDictionary = {};
 
       for (const story of allStories) {
-        const likes = await prisma.story_likes.findMany({
-          where: {
-            story_id: story.id,
-          },
-          select: {
-            id: true,
+        const userId = story.user.id;
+
+        if (!userStoriesDictionary[userId]) {
+          userStoriesDictionary[userId] = {
             user: {
-              select: {
-                id: true,
-                name: true,
-                username: true,
-              },
+              id: story.user.id,
+              name: story.user.name,
+              username: story.user.username,
+              profile_photo: story.user.profile_photo,
             },
-          },
+            stories: [],
+          };
+        }
+        userStoriesDictionary[userId].stories.push({
+          id: story.id,
+          file: story.file,
+          created_at: story.created_at,
+          like_count: story.like_count,
+          is_saved: story.is_saved,
+          user_id: story.user_id,
         });
-        story.likes = likes;
       }
 
-      allStories.sort(
-        (a, b) => new Date(b.story.created_at) - new Date(a.story.created_at)
-      );
-      console.log("all stories", allStories);
+      const combinedUserStories = Object.values(userStoriesDictionary);
 
-      const stories =
-        allStories.length > 0
-          ? allStories.map((story) => ({
-              id: story.id,
-              user_id: story.user_id,
-              username: story.username,
-              is_saved: story.story.is_saved,
-              file: story.story.file,
-              created_at: story.story.created_at,
-              like_count: story.story.like_count,
-              user: story.story.user,
-              likes: story.likes,
-            }))
-          : [];
-      console.log(stories);
-      return stories;
+      console.dir(combinedUserStories, { depth: 3 });
+      return combinedUserStories;
     },
   },
   Mutation: {
