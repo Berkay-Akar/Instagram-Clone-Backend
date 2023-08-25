@@ -3,103 +3,62 @@ import { uploadProfilePhoto } from "../utils/cloudinary.js";
 
 export const profileResolver = {
   Query: {
-    profile: async (_, { userId }, { prisma, user }) => {
+    getUserProfile: async (_, { username }, { prisma, user }) => {
       try {
-        const profile = await prisma.user.findUnique({
+        const profileUser = await prisma.user.findUnique({
           where: {
-            id: userId,
+            username: username,
           },
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            email: true,
-            post_count: true,
-            followings_count: true,
-            followers_count: true,
-            description: true,
-            profile_photo: true,
+          include: {
             posts: {
-              select: {
-                id: true,
-                file: true,
-                content: true,
-                created_at: true,
-                like_count: true,
-                comments_count: true,
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    username: true,
-                  },
-                },
+              include: {
+                user: true,
                 likes: {
-                  select: {
-                    id: true,
-                    user: {
-                      select: {
-                        id: true,
-                        name: true,
-                        username: true,
-                      },
-                    },
+                  include: {
+                    user: true,
                   },
                 },
                 saves: {
-                  select: {
-                    id: true,
-                    user: {
-                      select: {
-                        id: true,
-                        name: true,
-                        username: true,
-                      },
-                    },
+                  include: {
+                    user: true,
+                  },
+                },
+                post_replies: {
+                  include: {
+                    user: true,
+                  },
+                },
+                post_tagged: {
+                  include: {
+                    user: true,
                   },
                 },
               },
             },
             likedPosts: {
-              select: {
-                id: true,
+              include: {
+                user: true,
                 post: {
-                  select: {
-                    id: true,
-                    file: true,
-                    content: true,
-                    created_at: true,
-                    like_count: true,
-                    comments_count: true,
-                    user: {
-                      select: {
-                        id: true,
-                        name: true,
-                        username: true,
-                      },
-                    },
+                  include: {
+                    user: true,
                     likes: {
-                      select: {
-                        id: true,
-                        user: {
-                          select: {
-                            id: true,
-                            name: true,
-                            username: true,
-                          },
-                        },
+                      include: {
+                        user: true,
                       },
                     },
                     saves: {
-                      select: {
-                        id: true,
-                        user: {
-                          select: {
-                            id: true,
-                            name: true,
-                            username: true,
-                          },
-                        },
+                      include: {
+                        user: true,
+                      },
+                    },
+                    post_replies: {
+                      include: {
+                        user: true,
+                      },
+                    },
+                    post_tagged: {
+                      include: {
+                        user: true,
                       },
                     },
                   },
@@ -107,44 +66,67 @@ export const profileResolver = {
               },
             },
             savedPosts: {
-              select: {
-                id: true,
+              include: {
+                user: true,
                 post: {
-                  select: {
-                    id: true,
-                    file: true,
-                    content: true,
-                    created_at: true,
-                    like_count: true,
-                    comments_count: true,
-                    user: {
-                      select: {
-                        id: true,
-                        name: true,
-                        username: true,
-                      },
-                    },
+                  include: {
+                    user: true,
                     likes: {
-                      select: {
-                        id: true,
-                        user: {
-                          select: {
-                            id: true,
-                            name: true,
-                            username: true,
-                          },
-                        },
+                      include: {
+                        user: true,
                       },
                     },
                   },
                 },
               },
             },
+            taggedPosts: {
+              include: {
+                user: true,
+                post: {
+                  include: {
+                    user: true,
+                    likes: {
+                      include: {
+                        user: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            followers: {
+              select: {
+                id: true,
+              },
+            },
+            followings: {
+              select: {
+                id: true,
+              },
+            },
+            post_replies: {
+              include: {
+                user: true,
+              },
+            },
           },
         });
-        return [profile];
+
+        if (profileUser) {
+          const enrichedProfileUser = {
+            ...profileUser,
+            created_at: profileUser.created_at.toISOString(),
+            updated_at: profileUser.updated_at.toISOString(),
+          };
+          console.log(enrichedProfileUser);
+          return [enrichedProfileUser];
+        } else {
+          return [];
+        }
       } catch (error) {
-        throw new ApolloError(error);
+        console.log(error.message);
+        return [];
       }
     },
   },
@@ -165,6 +147,9 @@ export const profileResolver = {
             created_at: true,
             like_count: true,
             comments_count: true,
+            user_id: true,
+            created_at: true,
+            updated_at: true,
             user: {
               select: {
                 id: true,
@@ -175,6 +160,8 @@ export const profileResolver = {
             likes: {
               select: {
                 id: true,
+                user_id: true,
+                post_id: true,
                 user: {
                   select: {
                     id: true,

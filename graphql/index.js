@@ -140,7 +140,7 @@ export const schema = gql`
     posts: [Post!]!
     post(id: Int!): Post
     authentication: User
-    profile(userId: Int!): [User]
+    getUserProfile(username: String!): [User]
     replies(postId: Int!): Post_replies
     getStoryList: [StoriesResponse]
   }
