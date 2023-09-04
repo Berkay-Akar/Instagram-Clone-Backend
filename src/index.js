@@ -10,6 +10,7 @@ import { mergeResolvers } from "@graphql-tools/merge";
 import { commentResolver } from "../resolvers/comment.js";
 import { profileResolver } from "../resolvers/profile.js";
 import { storyResolver } from "../resolvers/story.js";
+import { messageResolver } from "../resolvers/message.js";
 
 const app = express();
 const PORT = 4000;
@@ -22,6 +23,7 @@ const resolvers = [
   commentResolver,
   profileResolver,
   storyResolver,
+  messageResolver,
 ];
 
 const server = new ApolloServer({

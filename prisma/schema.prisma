@@ -31,6 +31,11 @@ model user {
   reply_likes      reply_likes[]
   story            story[]
   story_likes      story_likes[]
+
+  conversation conversation[]
+  message      message[]
+  conversation conversation[]
+  conversation conversation[]
 }
 
 model post {
@@ -137,3 +142,35 @@ model follows {
   created_at   DateTime @default(now())
   updated_at   DateTime @updatedAt
 }
+
+model conversation {
+  id           Int       @id @default(autoincrement())
+  sender       user      @relation("sentConversations", fields: [senderId], references: [id])
+  senderId     Int
+  receiver     user      @relation("receivedConversations", fields: [receiverId], references: [id])
+  receiverId   Int
+  messagesSent message[] @relation("sentMessages")
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  user    user?     @relation(fields: [userId], references: [id])
+  userId  Int?
+  message message[]
+}
+
+model message {
+  id             Int          @id @default(autoincrement())
+  content        String
+  is_seen        Boolean
+  is_deleted     Boolean
+  sender         user         @relation(fields: [senderId], references: [id])
+  senderId       Int
+  conversation   conversation @relation(fields: [conversationId], references: [id])
+  conversationId Int
+  created_at     DateTime     @default(now())
+  updated_at     DateTime     @updatedAt
+
+  conversation conversation @relation(fields: [conversationId], references: [id])
+}
+
+// save edince dublicate yapıyor, dublicateleri silince hata veriyor çözemedim, ancak Ayhan üstesinden gelir bu işin

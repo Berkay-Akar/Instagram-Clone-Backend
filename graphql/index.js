@@ -134,6 +134,26 @@ export const schema = gql`
     stories: [Story!]!
   }
 
+  type Message {
+    id: Int!
+    content: String!
+    senderId: Int!
+    receiverId: Int!
+    created_at: String!
+    updated_at: String!
+    userId: Int!
+    conversationId: Int
+  }
+
+  type Conversation {
+    id: Int!
+    participant: [User!]!
+    messages: [Message]
+    created_at: String!
+    updated_at: String!
+    userId: Int
+  }
+
   type Query {
     users: [User!]!
     user(id: Int!): User
@@ -143,6 +163,7 @@ export const schema = gql`
     getUserProfile(username: String!): [User]
     replies(postId: Int!): Post_replies
     getStoryList: [StoriesResponse]
+    getMessages(conversationId: Int!): Conversation
   }
 
   type Mutation {
@@ -197,5 +218,7 @@ export const schema = gql`
     followingsStory(userId: Int!): [Story]
     sendResetEmail(email: String!): String
     resetPassword(token: String!, newPassword: String!): String
+    sendMessage(receiverId: Int!, content: String!): Message
+    createConversation(participantIds: [Int!]): Conversation
   }
 `;

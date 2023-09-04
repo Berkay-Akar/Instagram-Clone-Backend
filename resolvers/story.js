@@ -68,7 +68,6 @@ export const storyResolver = {
 
       for (const story of allStories) {
         const userId = story.user.id;
-
         if (!userStoriesDictionary[userId]) {
           userStoriesDictionary[userId] = {
             user: {
@@ -87,6 +86,9 @@ export const storyResolver = {
           like_count: story.like_count,
           is_saved: story.is_saved,
           user_id: story.user_id,
+          username: story.user.username,
+          name: story.user.name,
+          profile_photo: story.user.profile_photo,
         });
       }
 
