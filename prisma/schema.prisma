@@ -8,34 +8,33 @@ generator client {
 }
 
 model user {
-  id               Int            @id @default(autoincrement())
-  name             String
-  username         String         @unique
-  email            String         @unique
-  password         String         @unique
-  description      String?
-  profile_photo    String?
-  reset_token      String?
-  followers_count  Int            @default(0)
-  followings_count Int            @default(0)
-  post_count       Int            @default(0)
-  posts            post[]
-  likedPosts       post_likes[]
-  savedPosts       post_saved[]
-  taggedPosts      post_tagged[]
-  followers        follows[]      @relation("following")
-  followings       follows[]      @relation("follower")
-  created_at       DateTime       @default(now())
-  updated_at       DateTime       @updatedAt
-  post_replies     post_replies[]
-  reply_likes      reply_likes[]
-  story            story[]
-  story_likes      story_likes[]
-
-  conversation conversation[]
-  message      message[]
-  conversation conversation[]
-  conversation conversation[]
+  id                  Int            @id @default(autoincrement())
+  name                String
+  username            String         @unique
+  email               String         @unique
+  password            String         @unique
+  description         String?
+  profile_photo       String?
+  reset_token         String?
+  followers_count     Int            @default(0)
+  followings_count    Int            @default(0)
+  post_count          Int            @default(0)
+  posts               post[]
+  likedPosts          post_likes[]
+  savedPosts          post_saved[]
+  taggedPosts         post_tagged[]
+  followers           follows[]      @relation("following")
+  followings          follows[]      @relation("follower")
+  created_at          DateTime       @default(now())
+  updated_at          DateTime       @updatedAt
+  post_replies        post_replies[]
+  reply_likes         reply_likes[]
+  story               story[]
+  story_likes         story_likes[]
+  ownerConversations  conversation[] @relation("user_a")
+  chatToConversations conversation[] @relation("user_b")
+  sentMessages        message[]      @relation("sentMessages")
+  receivedMessages    message[]      @relation("receivedMessages")
 }
 
 model post {
@@ -144,33 +143,31 @@ model follows {
 }
 
 model conversation {
-  id           Int       @id @default(autoincrement())
-  sender       user      @relation("sentConversations", fields: [senderId], references: [id])
-  senderId     Int
-  receiver     user      @relation("receivedConversations", fields: [receiverId], references: [id])
-  receiverId   Int
-  messagesSent message[] @relation("sentMessages")
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
+  id         Int       @id @default(autoincrement())
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  message    message[]
+  userA      user      @relation("user_a", fields: [userAId], references: [id])
+  userAId    Int
+  userB      user      @relation("user_b", fields: [userBId], references: [id])
+  userBId    Int
 
-  user    user?     @relation(fields: [userId], references: [id])
-  userId  Int?
-  message message[]
+  @@unique([userAId, userBId])
 }
 
 model message {
   id             Int          @id @default(autoincrement())
   content        String
-  is_seen        Boolean
-  is_deleted     Boolean
-  sender         user         @relation(fields: [senderId], references: [id])
+  senderUser     user         @relation("sentMessages", fields: [senderId], references: [id])
   senderId       Int
+  receiverUser   user         @relation("receivedMessages", fields: [receiverId], references: [id])
+  receiverId     Int
+  is_seen        Boolean      @default(false)
+  is_deleted     Boolean      @default(false)
   conversation   conversation @relation(fields: [conversationId], references: [id])
   conversationId Int
   created_at     DateTime     @default(now())
   updated_at     DateTime     @updatedAt
-
-  conversation conversation @relation(fields: [conversationId], references: [id])
 }
 
 // save edince dublicate yapıyor, dublicateleri silince hata veriyor çözemedim, ancak Ayhan üstesinden gelir bu işin

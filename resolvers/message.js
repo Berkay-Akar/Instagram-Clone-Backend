@@ -2,18 +2,32 @@ import { ApolloError } from "apollo-server";
 
 export const messageResolver = {
   Query: {
-    getMessages: async (_, { conversationId }, { prisma, userId }) => {
+    getMessages: async (_, { conversationId }, { prisma, user }) => {
+      const userId = user.id;
       try {
-        // Check if the user is a participant in the conversation
+        console.log("top of the try");
         const conversation = await prisma.conversation.findFirst({
           where: {
             id: conversationId,
-            participants: { some: { id: userId } },
+            OR: [{ userAId: userId }, { userBId: userId }],
           },
           include: {
-            messages: { include: { sender: true, receiver: true } },
+            message: {
+              select: {
+                senderId: true,
+                receiverId: true,
+                content: true,
+                created_at: true,
+                updated_at: true,
+                conversationId: true,
+                id: true,
+              },
+            },
+            userA: true,
+            userB: true,
           },
         });
+        console.log("top of transformed");
 
         if (!conversation) {
           throw new ApolloError(
@@ -22,75 +36,133 @@ export const messageResolver = {
           );
         }
 
-        return conversation.messages;
+        const transformedConversation = {
+          ...conversation,
+          userA: {
+            id: conversation.userA.id,
+            username: conversation.userA.username,
+            name: conversation.userA.name,
+            profile_photo: conversation.userA.profile_photo,
+          },
+          userB: {
+            id: conversation.userB.id,
+            username: conversation.userB.username,
+            name: conversation.userB.name,
+            profile_photo: conversation.userB.profile_photo,
+          },
+        };
+
+        console.log("conversation:", transformedConversation);
+
+        return transformedConversation;
       } catch (error) {
         throw new ApolloError(
           "Failed to retrieve messages",
-          "MESSAGES_QUERY_ERROR"
+          "MESSAGES_QUERY_ERROR",
+          { originalError: error }
         );
       }
     },
   },
 
   Mutation: {
-    // conversation id tut, varsa yeni oluşturma mesaj ekle, yoksa conversation id yoksa yeni bir conversation yarat
-    sendMessage: async (
-      _,
-      { receiverId, content, conversationId },
-      { prisma, user }
-    ) => {
-      console.log("sender", user.id);
-      console.log("receiver", receiverId);
+    sendMessage: async (_, { receiverId, content }, { prisma, user }) => {
+      const senderId = user.id;
       try {
-        const sender = await prisma.user.findFirst({ where: { id: user.id } });
-        const receiver = await prisma.user.findFirst({
-          where: { id: receiverId },
+        // Check if the conversation between sender and receiver already exists
+
+        const conversation = await prisma.conversation.findFirst({
+          where: {
+            OR: [
+              { userAId: senderId, userBId: receiverId },
+              { userAId: receiverId, userBId: senderId },
+            ],
+          },
         });
+        console.log("conversation:", conversation);
 
-        if (!sender || !receiver) {
-          throw new ApolloError(
-            "Invalid sender or receiver",
-            "INVALID_SENDER_OR_RECEIVER"
-          );
+        if (!conversation) {
+          // If the conversation doesn't exist, create a new one
+          const newConversation = await prisma.conversation.create({
+            data: {
+              userAId: senderId,
+              userBId: receiverId,
+            },
+          });
+
+          // Create the message associated with the new conversation
+          const message = await prisma.message.create({
+            data: {
+              senderId,
+              receiverId,
+              content,
+              conversationId: newConversation.id,
+            },
+          });
+
+          return message;
         }
-        console.log("alkdhkaha");
 
+        // If the conversation already exists
         const message = await prisma.message.create({
           data: {
-            receiverId: receiverId,
-            userId: user.id,
+            senderId,
+            receiverId,
             content,
-            senderId: user.id,
-            receiverId: receiverId,
+            conversationId: conversation.id,
           },
         });
-        console.log("message", message);
+
         return message;
       } catch (error) {
-        throw new ApolloError("Failed to send a message", "SEND_MESSAGE_ERROR");
+        console.error(error);
+        throw new Error("Failed to send a message");
       }
     },
-
-    createConversation: async (_, { participantIds }, { prisma, user }) => {
+    getUserConversations: async (_, __, { prisma, user }) => {
       const userId = user.id;
       try {
-        if (!participantIds.includes(userId)) {
-          participantIds.push(userId);
-        }
-
-        const conversation = await prisma.conversation.create({
-          data: {
-            participants: { connect: participantIds.map((id) => ({ id })) },
+        const conversations = await prisma.conversation.findMany({
+          where: {
+            OR: [{ userAId: userId }, { userBId: userId }],
           },
-          include: { participants: true, messages: true },
+          include: {
+            message: {
+              select: {
+                senderId: true,
+                receiverId: true,
+                content: true,
+                created_at: true,
+                updated_at: true,
+                conversationId: true,
+                id: true,
+              },
+            },
+            userA: true,
+            userB: true,
+          },
         });
 
-        return conversation;
+        const transformedConversations = conversations.map((conversation) => ({
+          ...conversation,
+          userA: {
+            id: conversation.userA.id,
+            username: conversation.userA.username,
+            name: conversation.userA.name,
+            profile_photo: conversation.userA.profile_photo,
+          },
+          userB: {
+            id: conversation.userB.id,
+            username: conversation.userB.username,
+            name: conversation.userB.name,
+            profile_photo: conversation.userB.profile_photo,
+          },
+        }));
+        console.log("conversations:", transformedConversations);
+        return transformedConversations;
       } catch (error) {
-        throw new ApolloError(
-          "Failed to create a conversation",
-          "CREATE_CONVERSATION_ERROR"
-        );
+        console.error(error);
+        throw new Error("Failed to retrieve conversations");
       }
     },
   },

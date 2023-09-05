@@ -21,6 +21,10 @@ export const schema = gql`
     post_replies: [Post_replies!]
     created_at: String!
     updated_at: String!
+    ownerConversations: [Conversation]
+    chatToConversations: [Conversation]
+    sentMessages: [Message]
+    receivedMessages: [Message]
   }
 
   type Post {
@@ -139,19 +143,22 @@ export const schema = gql`
     content: String!
     senderId: Int!
     receiverId: Int!
+    is_seen: Boolean
+    is_deleted: Boolean
     created_at: String!
     updated_at: String!
-    userId: Int!
     conversationId: Int
   }
 
   type Conversation {
-    id: Int!
-    participant: [User!]!
-    messages: [Message]
+    id: Int
+    userA: User
+    userAId: Int
+    userB: User
+    userBId: Int
+    message: [Message]
     created_at: String!
     updated_at: String!
-    userId: Int
   }
 
   type Query {
@@ -219,6 +226,6 @@ export const schema = gql`
     sendResetEmail(email: String!): String
     resetPassword(token: String!, newPassword: String!): String
     sendMessage(receiverId: Int!, content: String!): Message
-    createConversation(participantIds: [Int!]): Conversation
+    getUserConversations: [Conversation]
   }
 `;
