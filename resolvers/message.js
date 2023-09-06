@@ -2,13 +2,12 @@ import { ApolloError } from "apollo-server";
 
 export const messageResolver = {
   Query: {
-    getMessages: async (_, { conversationId }, { prisma, user }) => {
+    getConversations: async (_, __, { prisma, user }) => {
       const userId = user.id;
       try {
         console.log("top of the try");
-        const conversation = await prisma.conversation.findFirst({
+        const conversations = await prisma.conversation.findMany({
           where: {
-            id: conversationId,
             OR: [{ userAId: userId }, { userBId: userId }],
           },
           include: {
@@ -29,14 +28,14 @@ export const messageResolver = {
         });
         console.log("top of transformed");
 
-        if (!conversation) {
+        if (!conversations) {
           throw new ApolloError(
-            "Conversation not found",
-            "CONVERSATION_NOT_FOUND"
+            "Conversations not found",
+            "CONVERSATIONS_NOT_FOUND"
           );
         }
 
-        const transformedConversation = {
+        const transformedConversations = conversations.map((conversation) => ({
           ...conversation,
           userA: {
             id: conversation.userA.id,
@@ -50,15 +49,16 @@ export const messageResolver = {
             name: conversation.userB.name,
             profile_photo: conversation.userB.profile_photo,
           },
-        };
+        }));
 
-        console.log("conversation:", transformedConversation);
+        console.log("Transformed Conversations:", transformedConversations);
 
-        return transformedConversation;
+        return transformedConversations;
       } catch (error) {
+        console.error(error);
         throw new ApolloError(
-          "Failed to retrieve messages",
-          "MESSAGES_QUERY_ERROR",
+          "Failed to retrieve conversations",
+          "CONVERSATIONS_QUERY_ERROR",
           { originalError: error }
         );
       }
@@ -117,52 +117,6 @@ export const messageResolver = {
       } catch (error) {
         console.error(error);
         throw new Error("Failed to send a message");
-      }
-    },
-    getUserConversations: async (_, __, { prisma, user }) => {
-      const userId = user.id;
-      try {
-        const conversations = await prisma.conversation.findMany({
-          where: {
-            OR: [{ userAId: userId }, { userBId: userId }],
-          },
-          include: {
-            message: {
-              select: {
-                senderId: true,
-                receiverId: true,
-                content: true,
-                created_at: true,
-                updated_at: true,
-                conversationId: true,
-                id: true,
-              },
-            },
-            userA: true,
-            userB: true,
-          },
-        });
-
-        const transformedConversations = conversations.map((conversation) => ({
-          ...conversation,
-          userA: {
-            id: conversation.userA.id,
-            username: conversation.userA.username,
-            name: conversation.userA.name,
-            profile_photo: conversation.userA.profile_photo,
-          },
-          userB: {
-            id: conversation.userB.id,
-            username: conversation.userB.username,
-            name: conversation.userB.name,
-            profile_photo: conversation.userB.profile_photo,
-          },
-        }));
-        console.log("conversations:", transformedConversations);
-        return transformedConversations;
-      } catch (error) {
-        console.error(error);
-        throw new Error("Failed to retrieve conversations");
       }
     },
   },

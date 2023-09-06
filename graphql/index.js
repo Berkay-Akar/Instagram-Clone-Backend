@@ -170,7 +170,7 @@ export const schema = gql`
     getUserProfile(username: String!): [User]
     replies(postId: Int!): Post_replies
     getStoryList: [StoriesResponse]
-    getMessages(conversationId: Int!): Conversation
+    getConversations: [Conversation]
   }
 
   type Mutation {
