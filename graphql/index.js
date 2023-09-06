@@ -227,5 +227,6 @@ export const schema = gql`
     resetPassword(token: String!, newPassword: String!): String
     sendMessage(receiverId: Int!, content: String!): Message
     getUserConversations: [Conversation]
+    getConversationMessage(conversationId: Int): [Message]
   }
 `;

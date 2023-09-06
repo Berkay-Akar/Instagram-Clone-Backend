@@ -138,13 +138,14 @@ export const authResolver = {
             password: hashedPassword,
           },
         });
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.findFirst({
           where: {
             id: registerUser.id,
           },
           select: {
             id: true,
             name: true,
+            email: true,
             username: true,
             profile_photo: true,
           },

@@ -119,5 +119,24 @@ export const messageResolver = {
         throw new Error("Failed to send a message");
       }
     },
+    getConversationMessage: async (_, { conversationId }, { prisma, user }) => {
+      const userId = user.id;
+
+      try {
+        const messages = await prisma.message.findMany({
+          where: {
+            conversationId: conversationId,
+          },
+          orderBy: {
+            created_at: "asc",
+          },
+        });
+        console.log(messages);
+        return messages;
+      } catch (error) {
+        console.log(error);
+        throw new Error("Failed to get messages");
+      }
+    },
   },
 };
