@@ -54,10 +54,16 @@ export const postResolver = {
               content: true,
               like_count: true,
               comments_count: true,
+              original_reply_id: true,
+              created_at: true,
+              updated_at: true,
+
               user: {
                 select: {
                   name: true,
                   username: true,
+                  profile_photo: true,
+                  id: true,
                 },
               },
             },
@@ -108,6 +114,25 @@ export const postResolver = {
                 name: true,
                 username: true,
                 profile_photo: true,
+              },
+            },
+            post_replies: {
+              select: {
+                id: true,
+                content: true,
+                like_count: true,
+                comments_count: true,
+                original_reply_id: true,
+                created_at: true,
+                updated_at: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                  },
+                },
               },
             },
             likes: {
@@ -184,6 +209,82 @@ export const postResolver = {
         (a, b) => new Date(b.post.created_at) - new Date(a.post.created_at)
       );
 
+      for (const post of allPosts) {
+        const saves = await prisma.post_saved.findMany({
+          where: {
+            post_id: post.id,
+          },
+          select: {
+            id: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                username: true,
+                profile_photo: true,
+              },
+            },
+          },
+        });
+        post.saves = saves;
+      }
+
+      for (const post of allPosts) {
+        const postReplies = await prisma.post_replies.findMany({
+          where: {
+            post_id: post.id,
+            original_reply_id: null,
+          },
+          select: {
+            id: true,
+            content: true,
+            like_count: true,
+            comments_count: true,
+            created_at: true,
+            updated_at: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                username: true,
+                profile_photo: true,
+              },
+            },
+            replies: {
+              select: {
+                id: true,
+                content: true,
+                like_count: true,
+                comments_count: true,
+                original_reply_id: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                  },
+                },
+              },
+            },
+            reply_likes: {
+              select: {
+                id: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+        post.post_replies = postReplies;
+      }
+
       const posts =
         allPosts.length > 0
           ? allPosts.map((post) => ({
@@ -198,9 +299,10 @@ export const postResolver = {
               user: post.post.user,
               likes: post.likes,
               saves: post.post.saves,
+              post_replies: post.post_replies,
             }))
           : [];
-      //console.log(posts);
+      console.log(posts);
       return posts;
     },
   },
