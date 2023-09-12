@@ -13,7 +13,7 @@ import { storyResolver } from "../resolvers/story.js";
 import { messageResolver } from "../resolvers/message.js";
 
 const app = express();
-const PORT = 4000;
+const PORT = 5000;
 
 const prisma = new PrismaClient();
 
@@ -59,7 +59,7 @@ const server = new ApolloServer({
   resolvers: mergeResolvers(resolvers),
 });
 
-server.listen().then(() => {
+server.listen({ port: PORT }).then(() => {
   console.log(`
     Server is running!
     Listening on port ${PORT}

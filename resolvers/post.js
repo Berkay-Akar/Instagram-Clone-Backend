@@ -107,6 +107,7 @@ export const postResolver = {
                 id: true,
                 name: true,
                 username: true,
+                profile_photo: true,
               },
             },
             likes: {
@@ -117,6 +118,7 @@ export const postResolver = {
                     id: true,
                     name: true,
                     username: true,
+                    profile_photo: true,
                   },
                 },
               },
@@ -170,6 +172,7 @@ export const postResolver = {
                 id: true,
                 name: true,
                 username: true,
+                profile_photo: true,
               },
             },
           },
