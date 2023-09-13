@@ -1,4 +1,6 @@
 import { ApolloError } from "apollo-server";
+import { PubSub, withFilter } from "graphql-subscriptions";
+const pubsub = new PubSub();
 
 export const messageResolver = {
   Query: {
@@ -65,6 +67,20 @@ export const messageResolver = {
     },
   },
 
+  Subscription: {
+    newMessage: {
+      subscribe: withFilter(
+        (_, __, { pubsub }) => pubsub.asyncIterator("NEW_MESSAGE"),
+        (payload, variables) => {
+          return (
+            payload.newMessage.senderId === variables.senderId &&
+            payload.newMessage.receiverId === variables.receiverId
+          );
+        }
+      ),
+    },
+  },
+
   Mutation: {
     sendMessage: async (_, { receiverId, content }, { prisma, user }) => {
       const senderId = user.id;
@@ -98,6 +114,11 @@ export const messageResolver = {
               content,
               conversationId: newConversation.id,
             },
+          });
+
+          pubsub.publish("NEW_MESSAGE", {
+            newMessage: message,
+            conversationId: conversation.id,
           });
 
           return message;

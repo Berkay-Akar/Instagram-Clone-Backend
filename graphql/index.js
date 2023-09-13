@@ -172,6 +172,9 @@ export const schema = gql`
     getStoryList: [StoriesResponse]
     getConversations: [Conversation]
   }
+  type Subscription {
+    newMessage: Message
+  }
 
   type Mutation {
     register(

@@ -39,6 +39,7 @@ export const postResolver = {
           likes: {
             select: {
               id: true,
+              user_id: true,
               user: {
                 select: {
                   id: true,
@@ -138,6 +139,7 @@ export const postResolver = {
             likes: {
               select: {
                 id: true,
+                user_id: true,
                 user: {
                   select: {
                     id: true,
@@ -192,6 +194,7 @@ export const postResolver = {
           },
           select: {
             id: true,
+            user_id: true,
             user: {
               select: {
                 id: true,
@@ -534,6 +537,26 @@ export const postResolver = {
                 },
               },
             },
+            post_replies: {
+              select: {
+                id: true,
+                content: true,
+                like_count: true,
+                comments_count: true,
+                original_reply_id: true,
+                created_at: true,
+                updated_at: true,
+
+                user: {
+                  select: {
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                    id: true,
+                  },
+                },
+              },
+            },
             saves: {
               select: {
                 id: true,
@@ -618,6 +641,26 @@ export const postResolver = {
                 },
               },
             },
+            post_replies: {
+              select: {
+                id: true,
+                content: true,
+                like_count: true,
+                comments_count: true,
+                original_reply_id: true,
+                created_at: true,
+                updated_at: true,
+
+                user: {
+                  select: {
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                    id: true,
+                  },
+                },
+              },
+            },
             saves: {
               select: {
                 id: true,
@@ -697,6 +740,26 @@ export const postResolver = {
                 },
               },
             },
+            post_replies: {
+              select: {
+                id: true,
+                content: true,
+                like_count: true,
+                comments_count: true,
+                original_reply_id: true,
+                created_at: true,
+                updated_at: true,
+
+                user: {
+                  select: {
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                    id: true,
+                  },
+                },
+              },
+            },
             saves: {
               select: {
                 id: true,
@@ -757,6 +820,26 @@ export const postResolver = {
                     name: true,
                     username: true,
                     profile_photo: true,
+                  },
+                },
+              },
+            },
+            post_replies: {
+              select: {
+                id: true,
+                content: true,
+                like_count: true,
+                comments_count: true,
+                original_reply_id: true,
+                created_at: true,
+                updated_at: true,
+
+                user: {
+                  select: {
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                    id: true,
                   },
                 },
               },
