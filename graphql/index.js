@@ -41,6 +41,8 @@ export const schema = gql`
     updated_at: String!
     post_tagged: [Post_tagged!]
     post_replies: [Post_replies!]
+    is_liked: Boolean!
+    is_saved: Boolean!
   }
   type Auth {
     user: User

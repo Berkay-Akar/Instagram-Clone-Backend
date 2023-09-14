@@ -311,6 +311,60 @@ export const postResolver = {
       return posts;
     },
   },
+  Post: {
+    is_liked: async (parent, args, { prisma, user }, info) => {
+      try {
+        const post = await prisma.post.findUnique({
+          where: {
+            id: parent.id,
+          },
+        });
+        if (!post) {
+          throw new Error("Post not found!");
+        }
+
+        const like = await prisma.post_likes.findFirst({
+          where: {
+            post_id: parent.id,
+            user_id: user.id,
+          },
+        });
+        if (!like) {
+          return false;
+        }
+        return true;
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    },
+    is_saved: async (parent, args, { prisma, user }, info) => {
+      try {
+        const post = await prisma.post.findUnique({
+          where: {
+            id: parent.id,
+          },
+        });
+        if (!post) {
+          throw new Error("Post not found!");
+        }
+
+        const save = await prisma.post_saved.findFirst({
+          where: {
+            post_id: parent.id,
+            user_id: user.id,
+          },
+        });
+        if (!save) {
+          return false;
+        }
+        return true;
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    },
+  },
 
   Mutation: {
     createPost: async (parent, { file, content }, { prisma, user }, info) => {
@@ -476,6 +530,7 @@ export const postResolver = {
 
     likePost: async (parent, { postId }, { prisma, user }, info) => {
       console.log("postId: ", postId);
+
       try {
         const post = await prisma.post.findUnique({
           where: {
