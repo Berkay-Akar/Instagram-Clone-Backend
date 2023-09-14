@@ -474,6 +474,7 @@ export const profileResolver = {
                 saves: {
                   select: {
                     id: true,
+                    post_id: true,
                     user: {
                       select: {
                         id: true,
