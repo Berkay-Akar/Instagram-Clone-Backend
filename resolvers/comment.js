@@ -88,10 +88,71 @@ export const commentResolver = {
             },
           },
         });
+        post = await prisma.post.findUnique({
+          where: {
+            id: postId,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                profile_photo: true,
+              },
+            },
+            likes: {
+              select: {
+                id: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                  },
+                },
+              },
+            },
+            post_replies: {
+              select: {
+                id: true,
+                content: true,
+                like_count: true,
+                comments_count: true,
+                original_reply_id: true,
+                created_at: true,
+                updated_at: true,
+
+                user: {
+                  select: {
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                    id: true,
+                  },
+                },
+              },
+            },
+            saves: {
+              select: {
+                id: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                  },
+                },
+              },
+            },
+          },
+        });
         console.log("id:", reply.id);
         console.log("Comment created successfully");
-        console.log(comment);
-        return comment;
+        console.log(post);
+        return post;
       } catch (error) {
         console.log(error.message);
         return null;

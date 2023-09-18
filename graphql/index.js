@@ -198,7 +198,7 @@ export const schema = gql`
     followUser(followId: Int!): Follows
     unfollowUser(followId: Int!): Follows
     login(identifier: String!, password: String!): Auth
-    createComment(postId: Int!, content: String!): Post_replies
+    createComment(postId: Int!, content: String!): Post
     updateComment(commentId: Int!, content: String!): Post_replies
     deleteComment(commentId: Int!): Post_replies
     likeComment(commentId: Int!): Post_replies
