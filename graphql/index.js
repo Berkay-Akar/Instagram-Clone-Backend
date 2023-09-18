@@ -233,5 +233,6 @@ export const schema = gql`
     sendMessage(receiverId: Int!, content: String!): Message
     getUserConversations: [Conversation]
     getConversationMessage(conversationId: Int): [Message]
+    getSinglePost(postId: Int!): Post
   }
 `;

@@ -1038,5 +1038,91 @@ export const postResolver = {
         return null;
       }
     },
+    getSinglePost: async (parent, { postId }, { prisma, user }, info) => {
+      try {
+        const post = await prisma.post.findFirst({
+          where: {
+            id: postId,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                profile_photo: true,
+              },
+            },
+            likes: {
+              select: {
+                id: true,
+                user_id: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                  },
+                },
+              },
+            },
+            post_replies: {
+              select: {
+                user_id: true,
+                id: true,
+                content: true,
+                like_count: true,
+                comments_count: true,
+                original_reply_id: true,
+                created_at: true,
+                updated_at: true,
+
+                user: {
+                  select: {
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                    id: true,
+                  },
+                },
+              },
+            },
+            saves: {
+              select: {
+                id: true,
+                post_id: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                  },
+                },
+              },
+            },
+            post_tagged: {
+              select: {
+                id: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    username: true,
+                    profile_photo: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+        console.log(post);
+        return post;
+      } catch (error) {
+        console.log(error);
+        return error.message;
+      }
+    },
   },
 };

@@ -64,29 +64,6 @@ export const commentResolver = {
             comments_count: post.comments_count + 1,
           },
         });
-
-        // post = await prisma.post.findFirst({
-        //   where: {
-        //     id: postId,
-        //   },
-        //   include: {
-        //     post_replies: {
-        //       select: {
-        //         like_count: true,
-        //         comment_count: true,
-        //         content: true,
-        //         user: {
-        //           select: {
-        //             id: true,
-        //             username: true,
-        //             name: true,
-        //             profile_photo: true,
-        //           },
-        //         },
-        //       },
-        //     },
-        //   },
-        // });
         const comment = await prisma.post_replies.findFirst({
           where: {
             id: reply.id,
@@ -97,6 +74,16 @@ export const commentResolver = {
                 id: true,
                 file: true,
                 content: true,
+                like_count: true,
+                comments_count: true,
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                profile_photo: true,
               },
             },
           },
@@ -278,12 +265,12 @@ export const commentResolver = {
         if (!comment) {
           throw new ApolloError("Comment not found");
         }
-        const reply = await prisma.post_replies.create({
+        let reply = await prisma.post_replies.create({
           data: {
             content: content,
-            post: { connect: { id: comment.post_id } }, // Use 'post' instead of 'post_id'
-            user: { connect: { id: user.id } }, // Assuming user relationship
-            original_reply: { connect: { id: comment.id } }, // Assuming original_reply relationship
+            post: { connect: { id: comment.post_id } },
+            user: { connect: { id: user.id } },
+            original_reply: { connect: { id: comment.id } },
           },
         });
         await prisma.post_replies.update({
@@ -292,6 +279,21 @@ export const commentResolver = {
           },
           data: {
             comments_count: comment.comments_count + 1,
+          },
+        });
+        reply = await prisma.post_replies.findFirst({
+          where: {
+            id: reply.id,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                name: true,
+                profile_photo: true,
+              },
+            },
           },
         });
         console.log("Reply created successfully");
