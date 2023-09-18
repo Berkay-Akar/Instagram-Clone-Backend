@@ -173,6 +173,7 @@ export const schema = gql`
     replies(postId: Int!): Post_replies
     getStoryList: [StoriesResponse]
     getConversations: [Conversation]
+    getSinglePost(postId: Int!): Post
   }
   type Subscription {
     newMessage: Message
@@ -233,6 +234,5 @@ export const schema = gql`
     sendMessage(receiverId: Int!, content: String!): Message
     getUserConversations: [Conversation]
     getConversationMessage(conversationId: Int): [Message]
-    getSinglePost(postId: Int!): Post
   }
 `;
