@@ -169,5 +169,3 @@ model message {
   created_at     DateTime     @default(now())
   updated_at     DateTime     @updatedAt
 }
-
-// save edince dublicate yapıyor, dublicateleri silince hata veriyor çözemedim, ancak Ayhan üstesinden gelir bu işin
