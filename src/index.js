@@ -28,7 +28,6 @@ const server = new ApolloServer({
   typeDefs: schema,
   context: async ({ req }) => {
     const auth = req.headers.authorization;
-    console.log(auth);
     let token = null;
     let user = null;
     if (auth) {
