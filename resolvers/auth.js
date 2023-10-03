@@ -117,7 +117,6 @@ export const authResolver = {
             "Username must be between 4 and 20 characters"
           );
         }
-        console.log("sadjkagsdkasd");
         //Big Letter/ small letter / special characters / number
         if (!schema.validate(password)) {
           console.log("Invalid  Password!");
@@ -205,13 +204,11 @@ export const authResolver = {
 
     resetPassword: async (_, { token, newPassword }, { prisma }) => {
       try {
-        console.log("asdlkasdas");
         const resetUser = await prisma.user.findFirst({
           where: {
             reset_token: token,
           },
         });
-        console.log(resetUser);
 
         if (!resetUser) {
           throw new AuthenticationError("User not found");
