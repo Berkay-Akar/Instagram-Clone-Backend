@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { ApolloServer } from "apollo-server";
 import "dotenv/config";
-import express from "express";
 import { authResolver } from "../resolvers/auth.js";
 import { postResolver } from "../resolvers/post.js";
 import { schema } from "../graphql/index.js";
@@ -12,7 +11,6 @@ import { profileResolver } from "../resolvers/profile.js";
 import { storyResolver } from "../resolvers/story.js";
 import { messageResolver } from "../resolvers/message.js";
 
-const app = express();
 const PORT = 5000;
 
 const prisma = new PrismaClient();
@@ -37,7 +35,6 @@ const server = new ApolloServer({
       token = auth.split(" ")[1];
     }
     if (token) {
-      console.log("token", token);
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         user = await prisma.user.findUnique({
