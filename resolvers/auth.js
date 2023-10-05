@@ -2,8 +2,6 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { AuthenticationError } from "apollo-server";
 import passwordValidator from "password-validator";
-import { uploadProfilePhoto } from "../utils/cloudinary.js";
-import nodemailer from "nodemailer";
 import SibApiV3Sdk from "sib-api-v3-sdk";
 import crypto from "crypto";
 
